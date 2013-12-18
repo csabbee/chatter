@@ -17,6 +17,8 @@
         $scope.rooms = {};
         $scope.newRoom = {};
         $scope.messages = {};
+        $scope.newMessage = {};
+        $scope.chatRoomMessages = [];
         
         $scope.getRooms = function(){
           $http({
@@ -51,6 +53,7 @@
         };
         
         $scope.getChat = function(roomId){
+          $scope.messages = {};
           $http({
             method: 'GET',
             url: 'http://ephubudw0441:8080/chat/' + roomId
@@ -58,31 +61,60 @@
             console.log("chat acquired");
             data.forEach(function(msg){
               console.log(msg.creator + ": " + msg.msg);
+              $scope.messages[msg.id] = msg;
             })
           }).error(function(data){
             console.log("ERROR acquiring chat")
           });
         };
+        
+        $scope.postMessage = function(roomId){
+          $http({
+            method: 'POST',
+            url: 'http://ephubudw0441:8080/chat/' + roomId,
+            data: $scope.newMessage
+          }).success(function(data){
+            console.log("message sent");
+          }).error(function(data){
+            console.log("ERROR sending message");
+          });
+        };
+        
       });  
   </script>
   </head>
   <body>
     <div ng-controller="ChatController">
-      <button ng-click="refresh()">refresh</button>
-				<form class="form-inline"> 
-					<input type="text" class="input-small" placeholder="creator" ng-model="newRoom.creator">
-          <input type="text" class="input-small" placeholder="name" ng-model="newRoom.name">
-					<button type="submit" class="btn btn-succes" ng-click="addRoom()">Add</button>
-				</form>
-        <article>
-          <canvas height="100" width="300"></canvas>
-        </article>
+      <button class="btn btn-success" ng-click="refresh()">refresh</button>
+      <form class="form-inline"> 
+				<input type="text" class="input-small" placeholder="creator" ng-model="newRoom.creator">
+        <input type="text" class="input-small" placeholder="name" ng-model="newRoom.name">
+				<button type="submit" class="btn" ng-click="addRoom()">Add</button>
+			</form>
+      <td>
+        <form class="form-inline">
+          <input type="text" placeholder="chat text" ng-model="newMessage.msg">
+          <button type="submit" class="btn" ng.click="postMessage(room.id)">Send</button>
+        </form>
+      </td>
+      <table>
+        <thead>
+          <th>
+            <div class="span6">User</div>
+          </th>
+          <th>Message</th>
+        </thead>
+        <tr ng-repeat="msg in messages">
+          <td> <div class="span6">{{msg.creator}}</div></td>
+          <td>{{msg.msg}}</td>
+        </tr>
+      </table>
       <table class="table table-striped">
         <thead>
-        <th>Date</th>
-        <th>Creator</th>
-        <th>ID</th>
-        <th>Name</th>
+          <th>Date</th>
+          <th>Creator</th>
+          <th>ID</th>
+          <th>Name</th>
         </thead>
         <tr ng-repeat="room in rooms">
           <td>{{room.date}}</td>

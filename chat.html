@@ -13,9 +13,10 @@
         delete $httpProvider.defaults.headers.post["Content-Type"];
       });
 
-      myAppModule.controller('ChatController', function($scope, $http){
+      myAppModule.controller('ChatController', function($scope, $http, $window){
         $scope.rooms = {};
         $scope.newRoom = {};
+        $scope.messages = {};
         
         $scope.getRooms = function(){
           $http({
@@ -45,9 +46,23 @@
             console.log("Room added");
             $scope.refresh();
           }).error(function(data){
-            console.log("ERROR" + data);
+            console.log("ERROR adding room" + data);
           });
-        }
+        };
+        
+        $scope.getChat = function(roomId){
+          $http({
+            method: 'GET',
+            url: 'http://ephubudw0441:8080/chat/' + roomId
+          }).success(function(data){
+            console.log("chat acquired");
+            data.forEach(function(msg){
+              console.log(msg.creator + ": " + msg.msg);
+            })
+          }).error(function(data){
+            console.log("ERROR acquiring chat")
+          });
+        };
       });  
   </script>
   </head>
@@ -59,12 +74,21 @@
           <input type="text" class="input-small" placeholder="name" ng-model="newRoom.name">
 					<button type="submit" class="btn btn-succes" ng-click="addRoom()">Add</button>
 				</form>
-      <table>
+        <article>
+          <canvas height="100" width="300"></canvas>
+        </article>
+      <table class="table table-striped">
+        <thead>
+        <th>Date</th>
+        <th>Creator</th>
+        <th>ID</th>
+        <th>Name</th>
+        </thead>
         <tr ng-repeat="room in rooms">
           <td>{{room.date}}</td>
           <td>{{room.creator}}</td>
+          <td ng-click="getChat(room.id)"><a href="">{{room.id}}</a></td>
           <td>{{room.name}}</td>
-          <td>{{room.id}}</td>
         </tr>
       </table>
     </div>

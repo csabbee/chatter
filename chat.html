@@ -1,0 +1,72 @@
+<!doctype html>
+<html ng-app="myApp">
+  <head>
+    <meta charset="UTF-8">
+    <title>Frontend Technologies Chatter</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.6.0/ui-bootstrap.js"></script>
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap.min.css" rel="stylesheet"/>
+    <script>
+      var myAppModule = angular.module('myApp', []);
+      
+      myAppModule.config(function($httpProvider) {
+        delete $httpProvider.defaults.headers.post["Content-Type"];
+      });
+
+      myAppModule.controller('ChatController', function($scope, $http){
+        $scope.rooms = {};
+        $scope.newRoom = {};
+        
+        $scope.getRooms = function(){
+          $http({
+            method: 'GET',
+            url: 'http://ephubudw0441:8080/rooms'
+          }).success(function(data) {
+            data.forEach(function(room){
+              $scope.rooms[room.id] = room;
+            });
+          }).error(function(data, status) {
+            console.log("ERROR" + data);
+            console.log("STATUS: " + status);
+          });
+        };
+        
+        $scope.refresh = function(){
+          console.log("refresh...");
+          $scope.getRooms();
+        };
+        
+        $scope.addRoom = function(){
+          $http({
+            method: 'POST',
+            url: 'http://ephubudw0441:8080/rooms',
+            data: $scope.newRoom
+          }).success(function(data){
+            console.log("Room added");
+            $scope.refresh();
+          }).error(function(data){
+            console.log("ERROR" + data);
+          });
+        }
+      });  
+  </script>
+  </head>
+  <body>
+    <div ng-controller="ChatController">
+      <button ng-click="refresh()">refresh</button>
+				<form class="form-inline"> 
+					<input type="text" class="input-small" placeholder="creator" ng-model="newRoom.creator">
+          <input type="text" class="input-small" placeholder="name" ng-model="newRoom.name">
+					<button type="submit" class="btn btn-succes" ng-click="addRoom()">Add</button>
+				</form>
+      <table>
+        <tr ng-repeat="room in rooms">
+          <td>{{room.date}}</td>
+          <td>{{room.creator}}</td>
+          <td>{{room.name}}</td>
+          <td>{{room.id}}</td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
